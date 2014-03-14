@@ -32,8 +32,7 @@ display = (balance, rate) ->
         extension = if denomination <= 200 then 'gif' else 'jpg'
         $('<img/>', {'src': "../static/images/#{denomination}.#{extension}"}).appendTo('body')
 
-$(document).ready ->
-  address = getParameterByName 'address'
+showBalance = (address) ->
   $.when(
     getBalance(address)
     getRate()
@@ -41,3 +40,13 @@ $(document).ready ->
     balance = balanceResponse[0]
     rate = rateResponse[0].bid
     display balance, rate
+
+showForm = ->
+  $('form').show()
+
+$(document).ready ->
+  address = getParameterByName 'address'
+  if address
+    showBalance address
+  else
+    showForm()
