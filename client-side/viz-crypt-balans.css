@@ -2,6 +2,9 @@ img {
     margin: 5px;
 }
 
-form {
+#balance,
+form,
+video,
+canvas {
     display: none;
 }

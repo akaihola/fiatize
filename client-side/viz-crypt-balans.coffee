@@ -1,3 +1,7 @@
+$balance = $('#balance')
+$form = $('form')
+$video = $ 'video'
+
 getBalance = (address) ->
   $.get "https://blockchain.info/q/addressbalance/#{address}"
 
@@ -23,14 +27,18 @@ getParameterByName = (name) ->
   results = regex.exec location.search
   if results is null then "" else decodeURIComponent(results[1].replace(/\+/g, " "))
 
-display = (balance, rate) ->
+display = (address, balance, rate) ->
   eurocents = Math.floor(rate * balance / 1000000)
   notesAndCoins = getChange eurocents
+  $('#address').html(address)
+  $('#mBTC').html(balance / 100000)
+  $('#EUR').html(eurocents / 100)
   for denomination in DENOMINATIONS
     if denomination of notesAndCoins
       for counter in [1..notesAndCoins[denomination]]
         extension = if denomination <= 200 then 'gif' else 'jpg'
-        $('<img/>', {'src': "../static/images/#{denomination}.#{extension}"}).appendTo('body')
+        $('<img/>', {'src': "../static/images/#{denomination}.#{extension}"}).appendTo($balance)
+  $balance.show()
 
 showBalance = (address) ->
   $.when(
@@ -39,10 +47,46 @@ showBalance = (address) ->
   ).done (balanceResponse, rateResponse) ->
     balance = balanceResponse[0]
     rate = rateResponse[0].bid
-    display balance, rate
+    display address, balance, rate
 
 showForm = ->
-  $('form').show()
+  $form.show()
+  $('#scan').on 'click', -> initWebcam()
+
+@initWebcam = ->
+  gCtx = $('#qr-canvas')[0].getContext('2d')
+  qrcode.callback = (a) ->
+    $('#id_address').val a.replace(/^bitcoin:/, '')
+    $form.submit()
+
+  captureToCanvas = (stream) ->
+    gCtx.drawImage $video[0], 0, 0
+    try
+      qrcode.decode()
+      stream.stop()
+      $video.hide()
+    catch e
+      console.log e
+      setTimeout captureToCanvas, 500, stream
+
+  navigator.getMedia = (navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia)
+
+  navigator.getMedia(
+    # constraints
+    {video: true, audio: false},
+    # successCallback
+    (localMediaStream) ->
+      console.log 'getMedia success'
+      $video.attr 'src', window.URL.createObjectURL localMediaStream
+      $video.show()
+      $video[0].onloadedmetadata = (e) ->
+         setTimeout captureToCanvas, 500, localMediaStream
+    # errorCallback
+    (err) -> console.log "The following error occured: " + err
+  )
 
 $(document).ready ->
   address = getParameterByName 'address'
