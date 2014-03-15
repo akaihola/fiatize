@@ -2,6 +2,10 @@ img {
     margin: 5px;
 }
 
+#card {
+    display: block;
+}
+
 #balance,
 form,
 video,

@@ -30,6 +30,7 @@ getParameterByName = (name) ->
 display = (address, balance, rate) ->
   eurocents = Math.floor(rate * balance / 1000000)
   notesAndCoins = getChange eurocents
+  $('#card').attr('src', "../cards/#{address}.png")
   $('#address').html(address)
   $('#mBTC').html(balance / 100000)
   $('#EUR').html(eurocents / 100)
