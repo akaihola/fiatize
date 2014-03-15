@@ -37,7 +37,7 @@ display = (address, balance, rate) ->
     if denomination of notesAndCoins
       for counter in [1..notesAndCoins[denomination]]
         extension = if denomination <= 200 then 'gif' else 'jpg'
-        $('<img/>', {'src': "../static/images/#{denomination}.#{extension}"}).appendTo($balance)
+        $('<img/>', {'src': "images/#{denomination}.#{extension}"}).appendTo($balance)
   $balance.show()
 
 showBalance = (address) ->
