@@ -1,6 +1,7 @@
-$addressInfo = $('#address-info')
-$form = $('form')
+$addressInfo = $ '#address-info'
+$form = $ 'form'
 $video = $ 'video'
+$canvas = $ '#qr-canvas'
 
 getBalance = (address) ->
   $.get "https://blockchain.info/q/addressbalance/#{address}"
@@ -30,8 +31,6 @@ getParameterByName = (name) ->
 display = (address, balance, rate) ->
   eurocents = Math.floor(rate * balance / 1000000)
   notesAndCoins = getChange eurocents
-  $('#card').attr('src', "../cards/#{address}.png")
-  $('#address').html(address)
   $('#mBTC').html(balance / 100000)
   $('#EUR').html(eurocents / 100)
   for denomination in DENOMINATIONS
@@ -39,9 +38,11 @@ display = (address, balance, rate) ->
       for counter in [1..notesAndCoins[denomination]]
         extension = if denomination <= 200 then 'gif' else 'jpg'
         $('<img/>', {'src': "images/#{denomination}.#{extension}"}).appendTo($addressInfo)
-  $addressInfo.show()
 
 showBalance = (address) ->
+  $('#card').attr('src', "../cards/#{address}.png")
+  $('#address').html(address)
+  $addressInfo.show()
   $.when(
     getBalance(address)
     getRate()
@@ -55,20 +56,21 @@ showForm = ->
   $('#scan').on 'click', -> initWebcam()
 
 @initWebcam = ->
-  gCtx = $('#qr-canvas')[0].getContext('2d')
+  gCtx = $canvas[0].getContext('2d')
+  gCtx.scale(-1, 1)
   qrcode.callback = (a) ->
     $('#id_address').val a.replace(/^bitcoin:/, '')
     $form.submit()
 
   captureToCanvas = (stream) ->
-    gCtx.drawImage $video[0], 0, 0
+    gCtx.drawImage $video[0], -800, 0
     try
       qrcode.decode()
       stream.stop()
-      $video.hide()
+      $canvas.hide()
     catch e
       console.log e
-      setTimeout captureToCanvas, 500, stream
+      setTimeout captureToCanvas, 100, stream
 
   navigator.getMedia = (navigator.getUserMedia ||
                         navigator.webkitGetUserMedia ||
@@ -82,7 +84,7 @@ showForm = ->
     (localMediaStream) ->
       console.log 'getMedia success'
       $video.attr 'src', window.URL.createObjectURL localMediaStream
-      $video.show()
+      $canvas.show()
       $video[0].onloadedmetadata = (e) ->
          setTimeout captureToCanvas, 500, localMediaStream
     # errorCallback
