@@ -1,4 +1,4 @@
-$balance = $('#balance')
+$addressInfo = $('#address-info')
 $form = $('form')
 $video = $ 'video'
 
@@ -38,8 +38,8 @@ display = (address, balance, rate) ->
     if denomination of notesAndCoins
       for counter in [1..notesAndCoins[denomination]]
         extension = if denomination <= 200 then 'gif' else 'jpg'
-        $('<img/>', {'src': "images/#{denomination}.#{extension}"}).appendTo($balance)
-  $balance.show()
+        $('<img/>', {'src': "images/#{denomination}.#{extension}"}).appendTo($addressInfo)
+  $addressInfo.show()
 
 showBalance = (address) ->
   $.when(

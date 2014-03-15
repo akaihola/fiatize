@@ -6,7 +6,19 @@ img {
     display: block;
 }
 
-#balance,
+#address:before {
+    content: "Bitcoin address: ";
+}
+
+#mBTC:after {
+    content: " m฿"
+}
+
+#EUR:after {
+    content: " EUR"
+}
+
+#address-info,
 form,
 video,
 canvas {

@@ -17,13 +17,13 @@
         <meta name="msapplication-wide310x150logo" content="widetile.png" />
         <meta name="msapplication-square310x310logo" content="largetile.png" />
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
-        <link rel="stylesheet" href="viz-crypt-balans.css"></link>
+        <link rel="stylesheet" href="viz-crypt-balans.css" />
     </head>
     <body>
-        <div id="balance">
+        <div id="address-info">
             <img id="card" onerror='this.style.display = "none"'>
-            <p>Bitcoin address: <span id="address"></span></p>
-            <p><span id="mBTC"></span> m฿ = <span id="EUR"></span> EUR</p>
+            <p id="address"></p>
+            <p id="balance"><span id="mBTC"></span> = <span id="EUR"></span></p>
         </div>
         <form method="get">
             <label for="id_address">Bitcoin address:</label>
