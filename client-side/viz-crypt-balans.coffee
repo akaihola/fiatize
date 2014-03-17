@@ -4,7 +4,8 @@ $video = $ 'video'
 $canvas = $ '#qr-canvas'
 
 getBalance = (address) ->
-  $.get "https://blockchain.info/q/addressbalance/#{address}"
+  # $.get "https://blockchain.info/q/addressbalance/#{address}"
+  $.get "http://btc.blockr.io/api/v1/address/balance/#{address}"
 
 getRate = ->
   $.getJSON 'https://api.bitcoinaverage.com/ticker/global/EUR/'
@@ -29,7 +30,8 @@ getParameterByName = (name) ->
   if results is null then "" else decodeURIComponent(results[1].replace(/\+/g, " "))
 
 display = (address, balance, rate) ->
-  eurocents = Math.floor(rate * balance / 1000000)
+  # eurocents = Math.floor(rate * balance / 1000000)
+  eurocents = Math.floor(rate * balance * 100)
   notesAndCoins = getChange eurocents
   $('#mBTC').html(balance / 100000)
   $('#EUR').html(eurocents / 100)
@@ -47,7 +49,7 @@ showBalance = (address) ->
     getBalance(address)
     getRate()
   ).done (balanceResponse, rateResponse) ->
-    balance = balanceResponse[0]
+    balance = balanceResponse[0].data.balance
     rate = rateResponse[0].bid
     display address, balance, rate
 
