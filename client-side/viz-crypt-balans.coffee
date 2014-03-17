@@ -33,7 +33,7 @@ display = (address, balance, rate) ->
   # eurocents = Math.floor(rate * balance / 1000000)
   eurocents = Math.floor(rate * balance * 100)
   notesAndCoins = getChange eurocents
-  $('#mBTC').html(balance / 100000)
+  $('#mBTC').html(1000 * balance)
   $('#EUR').html(eurocents / 100)
   for denomination in DENOMINATIONS
     if denomination of notesAndCoins
