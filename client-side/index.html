@@ -25,12 +25,18 @@
             <p id="address"></p>
             <p id="balance">
                 <span id="mBTC"><img src="images/ajax-loader.gif"></span> =
-                <span id="EUR"><img src="images/ajax-loader.gif"</span>
+                <span id="EUR"><img src="images/ajax-loader.gif"></span>
+                <span id="currency"></span>
             </p>
         </div>
         <form method="get">
             <label for="id_address">Bitcoin address:</label>
             <input type="text" name="address" id="id_address" />
+            <label for="id_currency">Fiat currency:</label>
+            <select id="id_currency" name="currency">
+                <option value="EUR">Euro</option>
+                <option value="USD">US Dollar</option>
+            </select>
             <input type="submit" value="Show balance" />
             <input type="button" value="Scan QR code" id="scan" />
         </form>

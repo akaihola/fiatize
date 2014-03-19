@@ -14,10 +14,6 @@ img {
     content: " m฿"
 }
 
-#EUR:after {
-    content: " EUR"
-}
-
 #address-info,
 form,
 video,
