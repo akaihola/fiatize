@@ -1,7 +1,15 @@
 $addressInfo = $ '#address-info'
+$notesAndCoins = $ '#notes-and-coins'
+$unconfirmedNotesAndCoins = $ '#unconfirmed-notes-and-coins'
 $form = $ 'form'
 $video = $ 'video'
 $canvas = $ '#qr-canvas'
+
+reverse = (a, b) -> b - a
+sum = (items) -> items.reduce(
+  (a, b) -> a + b,
+  0.0
+)
 
 cryptocurrencies =
   BTC:
@@ -9,16 +17,22 @@ cryptocurrencies =
     getBalance: (address) ->
       $.get("http://btc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
         resp.data.balance
+    getUnconfirmed: (address) ->
+      $.get("http://btc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
+        sum(x.amount for x in resp.data.unconfirmed)
   LTC:
     regex: /^[L]/
     getBalance: (address) ->
       $.get("http://ltc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
         resp.data.balance
+    getUnconfirmed: (address) ->
+      $.get("http://ltc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
+        sum(x.amount for x in resp.data.unconfirmed)
 
-getBalance = (address) ->
+getCurrencyApi = (address) ->
   for currencyCode, currency of cryptocurrencies
     if currency.regex.test(address)
-      return currency.getBalance address
+      return currency
 
 ecbTokensUri = 'http://www.ecb.europa.eu/euro'
 eurCoinsUri = "#{ecbTokensUri}/coins/common/shared/img"
@@ -62,8 +76,6 @@ fiatCurrencies =
       5000: "#{usdTokensUri}/Series2004NoteFront_50small.jpg"
       10000: "#{usdTokensUri}/100/100_front_75_174.jpg"
 
-reverse = (a, b) -> b - a
-
 getChange = (target, currency) ->
   total = 0
   result = {}
@@ -83,27 +95,40 @@ getParameterByName = (name) ->
   results = regex.exec location.search
   if results is null then "" else decodeURIComponent(results[1].replace(/\+/g, " "))
 
-display = (address, balance, currency, rate) ->
-  eurocents = Math.floor(rate * balance * 100)
-  notesAndCoins = getChange eurocents, currency
-  $('#mBTC').html(1000 * balance)
-  $('#EUR').html(eurocents / 100)
-  $('#currency').html(currency)
+showNotesAndCoins = (notesAndCoins, target) ->
   denominations = (denomination for denomination of notesAndCoins)
   for denomination in denominations.sort(reverse)
     for counter in [1..notesAndCoins[denomination].count]
-      $('<img/>', {'src': notesAndCoins[denomination].src}).appendTo($addressInfo)
+      $('<img/>', {'src': notesAndCoins[denomination].src}).appendTo(target)
+
+display = (address, balance, unconfirmed, currency, rate) ->
+  $('.crypto-unit').html('m฿')
+  $('.currency').html(currency)
+  $('#crypto-balance').html(1000 * balance)
+  fiat = Math.floor(rate * balance * 100)
+  $('#fiat-balance').html(fiat / 100)
+  notesAndCoins = getChange fiat, currency
+  showNotesAndCoins notesAndCoins, $notesAndCoins
+
+  if unconfirmed
+    $('#crypto-unconfirmed').html(1000 * unconfirmed)
+    unconfirmedFiat = Math.floor(rate * unconfirmed * 100)
+    $('#fiat-unconfirmed').html(1000 * unconfirmedFiat)
+    unconfirmedNotesAndCoins = getChange unconfirmedFiat, currency
+    showNotesAndCoins unconfirmedNotesAndCoins, $unconfirmedNotesAndCoins
 
 showBalance = (address) ->
   $('#card').attr('src', "../cards/#{address}.png")
   $('#address').html(address)
   $addressInfo.show()
   currency = getParameterByName('currency') || 'EUR'
+  api = getCurrencyApi address
   $.when(
-    getBalance(address)
+    api.getBalance(address)
+    api.getUnconfirmed(address)
     fiatCurrencies[currency].getRate()
-  ).done (balance, rate) ->
-    display address, balance, currency, rate
+  ).done (balance, unconfirmed, rate) ->
+    display address, balance, unconfirmed, currency, rate
 
 showForm = ->
   $form.show()

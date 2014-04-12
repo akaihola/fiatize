@@ -24,10 +24,21 @@
             <img id="card" onerror='this.style.display = "none"'>
             <p id="address"></p>
             <p id="balance">
-                <span id="mBTC"><img src="images/ajax-loader.gif"></span> =
-                <span id="EUR"><img src="images/ajax-loader.gif"></span>
-                <span id="currency"></span>
+                <span id="crypto-balance"><img src="images/ajax-loader.gif"></span>
+                <span class="crypto-unit"></span>
+                =
+                <span id="fiat-balance"><img src="images/ajax-loader.gif"></span>
+                <span class="currency"></span>
             </p>
+            <p id="unconfirmed">
+                <span id="crypto-unconfirmed"><img src="images/ajax-loader.gif"></span>
+                <span class="crypto-unit"></span>
+                =
+                <span id="fiat-unconfirmed"><img src="images/ajax-loader.gif"></span>
+                <span class="currency"></span>
+            </p>
+            <div id="notes-and-coins"></div>
+            <div id="unconfirmed-notes-and-coins"></div>
         </div>
         <form method="get">
             <label for="id_address">Bitcoin address:</label>

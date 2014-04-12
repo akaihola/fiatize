@@ -15,8 +15,13 @@ img {
 }
 
 #address-info,
+#unconfirmed,
 form,
 video,
 canvas {
     display: none;
+}
+
+#crypto-unconfirmed:before {
+    content: "Incoming: ";
 }
