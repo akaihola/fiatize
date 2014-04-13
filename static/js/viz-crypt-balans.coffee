@@ -11,26 +11,32 @@ sum = (items) -> items.reduce(
   0.0
 )
 
-cryptocurrencies =
-  BTC:
-    regex: /^[13]/
-    getBalance: (address) ->
-      $.get("http://btc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
-        resp.data.balance
-    getUnconfirmed: (address) ->
-      $.get("http://btc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
-        sum(x.amount for x in resp.data.unconfirmed)
-  LTC:
-    regex: /^[L]/
-    getBalance: (address) ->
-      $.get("http://ltc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
-        resp.data.balance
-    getUnconfirmed: (address) ->
-      $.get("http://ltc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
-        sum(x.amount for x in resp.data.unconfirmed)
+cryptocurrencies = [
+  code: 'BTC'
+  unit: 'm฿'
+  multiplier: 1000
+  regex: /^[13]/
+  getBalance: (address) ->
+    $.get("http://btc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
+      resp.data.balance
+  getUnconfirmed: (address) ->
+    $.get("http://btc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
+      sum(x.amount for x in resp.data.unconfirmed)
+,
+  code: 'LTC'
+  unit: 'Ł'
+  multiplier: 1
+  regex: /^[L]/
+  getBalance: (address) ->
+    $.get("http://ltc.blockr.io/api/v1/address/balance/#{address}").then (resp) ->
+      resp.data.balance
+  getUnconfirmed: (address) ->
+    $.get("http://ltc.blockr.io/api/v1/address/unconfirmed/#{address}").then (resp) ->
+      sum(x.amount for x in resp.data.unconfirmed)
+]
 
 getCurrencyApi = (address) ->
-  for currencyCode, currency of cryptocurrencies
+  for currency in cryptocurrencies
     if currency.regex.test(address)
       return currency
 
@@ -42,8 +48,11 @@ usdTokensUri = 'http://www.newmoney.gov/newmoney/images/general'
 
 fiatCurrencies =
   EUR:
-    getRate: ->
-      $.getJSON('https://api.bitcoinaverage.com/ticker/global/EUR/').then (resp) -> resp.bid
+    getRate:
+      BTC: ->
+        $.getJSON('https://api.bitcoinaverage.com/ticker/global/EUR/').then (resp) -> resp.bid
+      LTC: ->
+        $.getJSON('http://www.cryptocoincharts.info/v2/api/tradingPair/LTC_EUR').then (resp) -> resp.price
     tokenImages:
       1: "#{eurCoinsUri}/common_1cent.gif"
       2: "#{eurCoinsUri}/common_2cent.gif"
@@ -62,7 +71,10 @@ fiatCurrencies =
       50000: "#{eurNotesUri}/500eurofr.jpg"
   USD:
     getRate: ->
-      $.getJSON('https://api.bitcoinaverage.com/ticker/global/USD/').then (resp) -> resp.bid
+      BTC: ->
+        $.getJSON('https://api.bitcoinaverage.com/ticker/global/USD/').then (resp) -> resp.bid
+      LTC: ->
+        $.getJSON('http://www.cryptocoincharts.info/v2/api/tradingPair/LTC_USD').then (reps) -> resp.price
     tokenImages:
       1: "#{usdCoinsUri}/2/2e/US_One_Cent_Obv.png/48px-US_One_Cent_Obv.png"
       5: "#{usdCoinsUri}/6/62/US_Nickel_2013_Obv.png/53px-US_Nickel_2013_Obv.png"
@@ -81,12 +93,13 @@ getChange = (target, currency) ->
   result = {}
   tokens = fiatCurrencies[currency].tokenImages
   for denomination in (+d for d of tokens).sort(reverse)
-    while total + denomination <= target
+    if total + denomination <= target
       result[denomination] ?=
         count: 0
         src: tokens[denomination]
-      result[denomination].count += 1
-      total += denomination
+      count = Math.floor((target - total) / denomination)
+      result[denomination].count += count
+      total += count * denomination
   return result
 
 getParameterByName = (name) ->
@@ -101,10 +114,10 @@ showNotesAndCoins = (notesAndCoins, target) ->
     for counter in [1..notesAndCoins[denomination].count]
       $('<img/>', {'src': notesAndCoins[denomination].src}).appendTo(target)
 
-display = (address, balance, unconfirmed, currency, rate) ->
-  $('.crypto-unit').html('m฿')
+display = (address, balance, unconfirmed, cryptocurrency, currency, rate) ->
+  $('.crypto-unit').html(cryptocurrency.unit)
   $('.currency').html(currency)
-  $('#crypto-balance').html(1000 * balance)
+  $('#crypto-balance').html(cryptocurrency.multiplier * balance)
   fiat = Math.floor(rate * balance * 100)
   $('#fiat-balance').html(fiat / 100)
   notesAndCoins = getChange fiat, currency
@@ -122,13 +135,13 @@ showBalance = (address) ->
   $('#address').html(address)
   $addressInfo.show()
   currency = getParameterByName('currency') || 'EUR'
-  api = getCurrencyApi address
+  cryptocurrency = getCurrencyApi address
   $.when(
-    api.getBalance(address)
-    api.getUnconfirmed(address)
-    fiatCurrencies[currency].getRate()
+    cryptocurrency.getBalance(address)
+    cryptocurrency.getUnconfirmed(address)
+    fiatCurrencies[currency].getRate[cryptocurrency.code]()
   ).done (balance, unconfirmed, rate) ->
-    display address, balance, unconfirmed, currency, rate
+    display address, balance, unconfirmed, cryptocurrency, currency, rate
 
 showForm = ->
   $form.show()

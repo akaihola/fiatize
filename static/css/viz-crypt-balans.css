@@ -7,11 +7,7 @@ img {
 }
 
 #address:before {
-    content: "Bitcoin address: ";
-}
-
-#mBTC:after {
-    content: " m฿"
+    content: "Cryptocurrency address: ";
 }
 
 #address-info,
