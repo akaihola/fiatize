@@ -70,7 +70,7 @@ fiatCurrencies =
       20000: "#{eurNotesUri}/200eurofr.jpg"
       50000: "#{eurNotesUri}/500eurofr.jpg"
   USD:
-    getRate: ->
+    getRate:
       BTC: ->
         $.getJSON('https://api.bitcoinaverage.com/ticker/global/USD/').then (resp) -> resp.bid
       LTC: ->
